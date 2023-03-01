@@ -7,6 +7,7 @@ from dotenv import load_dotenv,find_dotenv
 load_dotenv(find_dotenv())
 imaplib._MAXLINE = 10000000
 
+
 def check_email():
     success = False
     messages = []
@@ -14,7 +15,6 @@ def check_email():
     imap_obj = imapclient.IMAPClient('imap.gmail.com', ssl=True)
     try:
         imap_obj.login(os.environ['SENDER_MAIL'], os.environ['SENDER_PASSWORD'])
-        success = True
     except imapclient.exceptions.LoginError as e:
         error = e.args[0][2:len(e.args[0])-1]
     try:
@@ -29,8 +29,8 @@ def check_email():
                 "body": single_message.text_part.get_payload().decode(single_message.text_part.charset) if single_message.text_part is not None else ""
             }
             messages.append(message)
+            success = True
     except imapclient.exceptions.InvalidCriteriaError:
-        success = False
         error = "Invalid Search Arguments"
     finally:
         imap_obj.logout()

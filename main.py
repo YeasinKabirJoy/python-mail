@@ -1,6 +1,6 @@
 from send_mail import send_email
 from check_mail import check_email
-
+from delete_mail import delete_email
 if __name__ == '__main__':
 
     message = {
@@ -9,7 +9,7 @@ if __name__ == '__main__':
         multiline'''
     }
     print("--------------Sending mail-----------------------")
-    status = send_email("yeasinjoy07@gmail.com", message)
+    status = send_email("receivermail@gmail.com", message)
     if status["success"]:
         print("Mail Send")
     else:
@@ -26,3 +26,8 @@ if __name__ == '__main__':
             print("-------------------------------")
     else:
         print(f'Error:{error}')
+
+    print("----------Deleting Email-----------------")
+    success,deleted_uid, error = delete_email([]) # list of mail UIDs
+    if success:
+        print(f'Deleted. UID:{deleted_uid}')
