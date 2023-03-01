@@ -2,18 +2,18 @@ from send_mail import send_email
 from check_mail import check_email
 
 if __name__ == '__main__':
-    #
-    # message = {
-    #     "subject": "Testing",
-    #     "body": '''Testing
-    #     multiline'''
-    # }
-    # print("--------------Sending mail-----------------------")
-    # status = send_email("yeasinjoy07@gmail.com", message)
-    # if status["success"]:
-    #     print("Mail Send")
-    # else:
-    #     print(status["error"])
+
+    message = {
+        "subject": "Testing",
+        "body": '''Testing
+        multiline'''
+    }
+    print("--------------Sending mail-----------------------")
+    status = send_email("yeasinjoy07@gmail.com", message)
+    if status["success"]:
+        print("Mail Send")
+    else:
+        print(status["error"])
 
     print("----------Checking Inbox-----------------")
     success,messages,error = check_email()
