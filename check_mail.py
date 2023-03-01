@@ -1,34 +1,40 @@
 import os
-import imapclient
+import imaplib
+import imapclient #IMAPClient actually uses the imaplib module from the Python standard library under the hood
 import imapclient.exceptions
 import pyzmail
 from dotenv import load_dotenv,find_dotenv
 load_dotenv(find_dotenv())
+imaplib._MAXLINE = 10000000
 
-
-def check_last_email():
-    message_status = {
-        "success": False,
-        "subject":"",
-        "body":None,
-        "error": ""
-    }
+def check_email():
+    success = False
+    messages = []
+    error = ""
     imap_obj = imapclient.IMAPClient('imap.gmail.com', ssl=True)
     try:
         imap_obj.login(os.environ['SENDER_MAIL'], os.environ['SENDER_PASSWORD'])
+        success = True
+    except imapclient.exceptions.LoginError as e:
+        error = e.args[0][2:len(e.args[0])-1]
+    try:
         imap_obj.select_folder('INBOX', readonly=True)
         UIDs = imap_obj.search(['ALL'])
-        rawMessages = imap_obj.fetch([UIDs[-1]], ['BODY[]', 'FLAGS'])
-        message = pyzmail.PyzMessage.factory(rawMessages[UIDs[-1]][b'BODY[]'])
-        message_status["success"] = True
-        message_status["subject"] = message.get_subject()
-        if message.text_part is not None:
-            message_status["body"]=message.text_part.get_payload().decode(message.text_part.charset)
-    except imapclient.exceptions.LoginError as e:
-        message_status["error"]=e.args[0][2:len(e.args[0])-1]
+        raw_messages = imap_obj.fetch(UIDs, ['BODY[]', 'FLAGS'])
+        for id in UIDs:
+            single_message = pyzmail.PyzMessage.factory(raw_messages[id][b'BODY[]'])
+            message = {
+                "sender": single_message.get_addresses('from'),
+                "subject": single_message.get_subject(),
+                "body": single_message.text_part.get_payload().decode(single_message.text_part.charset) if single_message.text_part is not None else ""
+            }
+            messages.append(message)
+    except imapclient.exceptions.InvalidCriteriaError:
+        success = False
+        error = "Invalid Search Arguments"
     finally:
         imap_obj.logout()
-    return message_status
+    return success,messages,error
 
 
 
